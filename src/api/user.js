@@ -26,6 +26,21 @@ export function getInfo(token) {
   })
 }
 
+// 添加注册API
+export function register(data) {
+  return request({
+    url: '/organization/user/register',
+    method: 'post',
+    data: {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+      learningGoal: data.goal
+    }
+  })
+}
+
+
 export function logout() {
   return Promise.resolve({
     code: '000000',

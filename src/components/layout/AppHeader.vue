@@ -25,20 +25,55 @@
         </li>
       </ul>
 
-      <!-- 用户操作 -->
+      <!-- 用户操作区域 -->
       <div class="user-actions">
-        <button class="btn-secondary" @click="$router.push('/login')">
-          登录
-        </button>
-        <button class="btn-primary" @click="$router.push('/register')">
-          开始学习
-        </button>
+        <!-- 未登录状态 -->
+        <div v-if="!token" class="auth-buttons">
+          <button class="btn-secondary" @click="$router.push('/login')">
+            登录
+          </button>
+          <button class="btn-primary" @click="$router.push('/register')">
+            开始学习
+          </button>
+        </div>
+
+        <!-- 已登录状态 -->
+        <div v-else class="user-info">
+          <el-dropdown @command="handleCommand" class="user-dropdown">
+            <span class="el-dropdown-link">
+              <div class="user-avatar">
+                <img
+                  v-if="avatar"
+                  :src="avatar"
+                  alt="用户头像"
+                  class="avatar-img"
+                />
+                <i v-else class="el-icon-user-solid"></i>
+              </div>
+              <span class="username">{{ name || "用户" }}</span>
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="profile">
+                <i class="el-icon-user"></i> 个人中心
+              </el-dropdown-item>
+              <el-dropdown-item command="progress">
+                <i class="el-icon-data-line"></i> 学习进度
+              </el-dropdown-item>
+              <el-dropdown-item divided command="logout">
+                <i class="el-icon-switch-button"></i> 退出登录
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <script>
+import { mapGetters, mapActions } from "vuex";
+
 export default {
   name: "AppHeader",
   data() {
@@ -53,6 +88,9 @@ export default {
       ],
     };
   },
+  computed: {
+    ...mapGetters(["token", "avatar", "name", "introduction", "roles"]),
+  },
   mounted() {
     window.addEventListener("scroll", this.handleScroll);
   },
@@ -62,6 +100,53 @@ export default {
   methods: {
     handleScroll() {
       this.isScrolled = window.scrollY > 20;
+    },
+
+    // 处理下拉菜单命令
+    handleCommand(command) {
+      switch (command) {
+        case "profile":
+          this.$router.push("/profile");
+          break;
+        case "progress":
+          this.$router.push("/progress");
+          break;
+        case "logout":
+          this.handleLogout();
+          break;
+      }
+    },
+
+    // 处理退出登录
+    async handleLogout() {
+      try {
+        await this.$confirm("确定要退出登录吗？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+
+        // 调用退出登录 action
+        await this.$store.dispatch("user/logout");
+
+        // 清除本地存储
+        localStorage.removeItem("token");
+        sessionStorage.clear();
+
+        this.$message({
+          message: "退出登录成功",
+          type: "success",
+          duration: 2000,
+        });
+
+        // 跳转到首页
+        this.$router.push("/");
+      } catch (error) {
+        if (error !== "cancel") {
+          console.error("退出登录失败:", error);
+          this.$message.error("退出登录失败");
+        }
+      }
     },
   },
 };
@@ -160,6 +245,12 @@ export default {
 
 .user-actions {
   display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-buttons {
+  display: flex;
   gap: 0.75rem;
 }
 
@@ -171,12 +262,12 @@ export default {
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: none;
 }
 
 .btn-primary {
   background: #4f46e5;
   color: white;
-  border: none;
 }
 
 .btn-primary:hover {
@@ -195,6 +286,57 @@ export default {
   border-color: #4f46e5;
 }
 
+/* 用户信息样式 */
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown {
+  cursor: pointer;
+}
+
+.el-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.el-dropdown-link:hover {
+  background-color: #f5f5f5;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.username {
+  font-weight: 500;
+  color: #374151;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .header-container {
@@ -208,11 +350,26 @@ export default {
   .nav-menu {
     gap: 1.5rem;
   }
+
+  .username {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
   .nav-menu {
     display: none;
+  }
+
+  .auth-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 }
 </style>

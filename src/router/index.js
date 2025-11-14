@@ -91,9 +91,20 @@ export default new Router({
             name: 'NotFound',
             component: () => import('@/views/NotFound.vue'),
             meta: { title: '页面未找到' }
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: () => import('@/views/auth/Register.vue'),
+            meta: {
+                title: '注册',
+                guestOnly: true
+            }
         }
     ]
 })
+
+
 
 // 防止重复导航错误
 const originalPush = Router.prototype.push
