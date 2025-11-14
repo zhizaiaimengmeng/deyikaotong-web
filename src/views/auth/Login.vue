@@ -176,9 +176,9 @@ export default {
       this.loading = true;
 
       try {
-        debugger;
         // 使用模块化的 action
         await this.$store.dispatch("user/login", this.loginForm);
+        await this.$store.dispatch("user/getInfo");
 
         sessionStorage.setItem("username", this.loginForm.username);
 

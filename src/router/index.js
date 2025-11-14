@@ -19,6 +19,13 @@ export default new Router({
             meta: { title: '首页' }
         },
         {
+            path: '/profile',
+            name: 'profile',
+            component: () => import('@/views/profile/Profile.vue'),
+            meta: { title: '个人中心' },
+            props: true
+        },
+        {
             path: '/levels',
             name: 'LevelSelection',
             component: LevelSelection,

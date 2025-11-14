@@ -17,6 +17,9 @@ const mutations = {
   SET_INTRODUCTION: (state, introduction) => {
     state.introduction = introduction
   },
+  SET_USERID: (state, userId) => {
+    state.userId = userId
+  },
   SET_NAME: (state, name) => {
     state.name = name
   },
@@ -36,6 +39,7 @@ const actions = {
       login({ username: username.trim(), password: password }).then(response => {
         console.log(response)
         commit('SET_TOKEN', response.access_token)
+        commit('SET_NAME', username)
         setToken(response.access_token)
         resolve()
       }).catch(error => {
@@ -48,25 +52,24 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo(state.name).then(response => {
         const { data } = response
-
         if (!data) {
           reject('Verification failed, please Login again.')
         }
-
-        const { name, description } = data
+        const { id, description, roleIds } = data
 
         // roles must be a non-empty array
         // if (!roleIds || roleIds.length <= 0) {
         //   reject('getInfo: roles must be a non-null array!')
         // }
 
-        commit('SET_ROLES', ['admin'])
-        commit('SET_NAME', name)
+        commit('SET_ROLES', roleIds)
+        commit('SET_USERID', id)
+
         commit('SET_AVATAR', 'https://avatars3.githubusercontent.com/u/3946731?s=460&v=4')
         commit('SET_INTRODUCTION', description)
-        data.roles = ['admin']
+        data.roles = data.roleIds
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -99,30 +102,30 @@ const actions = {
     })
   },
 
-  // dynamically modify permissions
-  changeRoles({ commit, dispatch }, role) {
-    return new Promise(async resolve => {
-      const token = role + '-token'
+  //   // dynamically modify permissions
+  // changeRoles({ commit, dispatch }, role) {
+  //   return new Promise(async resolve => {
+  //     const token = role + '-token'
 
-      commit('SET_TOKEN', token)
-      setToken(token)
+  //     commit('SET_TOKEN', token)
+  //     setToken(token)
 
-      const { roles } = await dispatch('getInfo')
+  //     const { roles } = await dispatch('getInfo')
 
-      // resetRouter()
+  //     // resetRouter()
 
-      // generate accessible routes map based on roles
-      const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
+  //     // generate accessible routes map based on roles
+  //     const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
 
-      // dynamically add accessible routes
-      router.addRoutes(accessRoutes)
+  //     // dynamically add accessible routes
+  //     router.addRoutes(accessRoutes)
 
-      // reset visited views and cached views
-      dispatch('tagsView/delAllViews', null, { root: true })
+  //     // reset visited views and cached views
+  //     dispatch('tagsView/delAllViews', null, { root: true })
 
-      resolve()
-    })
-  }
+  //     resolve()
+  //   })
+  // }
 }
 
 export default {

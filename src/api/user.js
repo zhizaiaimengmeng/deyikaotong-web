@@ -18,11 +18,11 @@ export function login(data) {
   })
 }
 
-export function getInfo(token) {
+export function getInfo(username) {
   return request({
     url: '/organization/user',
     method: 'get',
-    params: { uniqueId: 'admin' }
+    params: { uniqueId: username }
   })
 }
 

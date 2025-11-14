@@ -311,7 +311,7 @@ export default {
         console.log("表单验证通过，开始注册流程");
 
         // 第二步：调用注册API
-        const response = await register({
+        await register({
           username: this.registerForm.username,
           email: this.registerForm.email,
           password: this.registerForm.password,
