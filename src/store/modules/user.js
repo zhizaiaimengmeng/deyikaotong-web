@@ -67,7 +67,7 @@ const actions = {
         commit('SET_ROLES', roleIds)
         commit('SET_USERID', id)
 
-        commit('SET_AVATAR', 'https://avatars3.githubusercontent.com/u/3946731?s=460&v=4')
+        commit('SET_AVATAR', 'https://avatars.githubusercontent.com/u/101272733?s=400&u=8ae61fd8b7b73fc495962a2537178e0bb8e0f1a1&v=4')
         commit('SET_INTRODUCTION', description)
         data.roles = data.roleIds
         resolve(data)

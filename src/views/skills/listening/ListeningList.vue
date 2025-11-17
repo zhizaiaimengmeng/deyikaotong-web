@@ -92,7 +92,7 @@
             class="question-item"
             @click="startQuestion(question.id)"
           >
-            <div class="question-order">{{ question.order }}</div>
+            <div class="question-order">{{ question.sortOrder }}</div>
 
             <div class="question-content">
               <div class="question-main">
@@ -139,6 +139,10 @@
 </template>
 
 <script>
+import {
+  getListeningCategory,
+  getQuestionByCategory,
+} from "@/api/question/question";
 export default {
   name: "ListeningLayoutRich",
   props: {
@@ -150,123 +154,14 @@ export default {
   data() {
     return {
       selectedCategoryId: 1,
-      categories: [
-        {
-          id: 1,
-          name: "天气预报理解",
-          description: "听懂德语天气预报信息",
-          icon: "fas fa-cloud-sun",
-          progress: 100,
-        },
-        {
-          id: 2,
-          name: "日常对话理解",
-          description: "日常问候和简单对话",
-          icon: "fas fa-comments",
-          progress: 75,
-        },
-        {
-          id: 3,
-          name: "购物场景对话",
-          description: "购物常用表达和词汇",
-          icon: "fas fa-shopping-cart",
-          progress: 50,
-        },
-        {
-          id: 4,
-          name: "餐厅点餐对话",
-          description: "餐厅点餐对话技巧",
-          icon: "fas fa-utensils",
-          progress: 25,
-        },
-        {
-          id: 5,
-          name: "问路与指示",
-          description: "询问方向和路线指示",
-          icon: "fas fa-map-signs",
-          progress: 0,
-        },
-        {
-          id: 6,
-          name: "公共交通",
-          description: "公交火车交通信息",
-          icon: "fas fa-bus",
-          progress: 30,
-        },
-      ],
-      questions: [
-        {
-          id: 101,
-          categoryId: 1,
-          order: "01",
-          title: "柏林天气预报",
-          description: "收听柏林地区未来三天的天气情况",
-          duration: "2分钟",
-          difficulty: "medium",
-          status: "completed",
-        },
-        {
-          id: 102,
-          categoryId: 1,
-          order: "02",
-          title: "慕尼黑天气预警",
-          description: "理解慕尼黑地区的特殊天气预警信息",
-          duration: "3分钟",
-          difficulty: "hard",
-          status: "in-progress",
-        },
-        {
-          id: 103,
-          categoryId: 1,
-          order: "03",
-          title: "全国天气概况",
-          description: "了解德国主要城市的天气对比",
-          duration: "4分钟",
-          difficulty: "easy",
-          status: "not-started",
-        },
-        {
-          id: 201,
-          categoryId: 2,
-          order: "01",
-          title: "早晨问候",
-          description: "学习德语中常见的早晨问候方式",
-          duration: "1分钟",
-          difficulty: "easy",
-          status: "completed",
-        },
-        {
-          id: 202,
-          categoryId: 2,
-          order: "02",
-          title: "家庭对话",
-          description: "理解家庭成员间的日常交流",
-          duration: "2分钟",
-          difficulty: "medium",
-          status: "in-progress",
-        },
-        {
-          id: 301,
-          categoryId: 3,
-          order: "01",
-          title: "超市购物",
-          description: "在超市询问价格和购买商品",
-          duration: "3分钟",
-          difficulty: "medium",
-          status: "not-started",
-        },
-        {
-          id: 302,
-          categoryId: 3,
-          order: "02",
-          title: "服装店试穿",
-          description: "在服装店试穿和询问尺寸",
-          duration: "2分钟",
-          difficulty: "easy",
-          status: "not-started",
-        },
-      ],
+      categories: [],
+
+      questions: [],
     };
+  },
+  created() {
+    this.getListeningCategory();
+    this.getQuestionByCategory();
   },
   computed: {
     currentLevel() {
@@ -294,6 +189,7 @@ export default {
       return this.categories.filter((cat) => cat.progress === 100).length;
     },
     overallProgress() {
+      console.log(this.categories);
       const totalProgress = this.categories.reduce(
         (sum, cat) => sum + cat.progress,
         0
@@ -337,6 +233,26 @@ export default {
         "not-started": "开始",
       };
       return map[status] || "开始";
+    },
+
+    getListeningCategory() {
+      const data = {};
+      getListeningCategory(data).then((response) => {
+        this.categories = response.data;
+      });
+    },
+
+    getQuestionByCategory() {
+      const data = {
+        categoryId: this.selectedCategoryId,
+      };
+      getQuestionByCategory(data).then((response) => {
+        // const userData = response.data;
+        console.log("questions" + response);
+        console.log(response);
+        this.questions = response.data;
+        // this.categories = response.data;
+      });
     },
   },
 };

@@ -40,3 +40,20 @@ export function deleteQuestion(data) {
   })
 }
 
+export function getListeningCategory(data) {
+  return request({
+    url: '/question-server/question/getListeningCategory',
+    method: 'post',
+    data
+  })
+}
+
+export function getQuestionByCategory(data) {
+  return request({
+    url: '/question-server/question/getQuestionByCategory',
+    method: 'post',
+    data
+  })
+}
+
+
