@@ -6,36 +6,16 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const name = defaultSettings.title || 'SpringCloud Admin' // page title
+const name = defaultSettings.title || 'SpringCloud Admin'
 
-// If your port is set to 80,
-// use administrator privileges to execute the command line.
-// For example, Mac: sudo npm run
-// You can change the port by the following method:
-// port = 9527 npm run dev OR npm run dev --port = 9527
-const port = process.env.port || process.env.npm_config_port || 8080 // dev port
+const port = process.env.port || process.env.npm_config_port || 8080
 
-// All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
-  // Source Map 配置 - 这是解决控制台显示编译代码的关键
-  configureWebpack: {
-    devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-source-map'
-  },
-
-  // 生产环境配置
-  productionSourceMap: true,
-  /**
-   * You will need to set publicPath if you plan to deploy your site under a sub path,
-   * for example GitHub Pages. If you plan to deploy your site to https://foo.github.io/bar/,
-   * then publicPath should be set to "/bar/".
-   * In most cases please use '/' !!!
-   * Detail: https://cli.vuejs.org/config/#publicpath
-   */
   publicPath: '/',
   outputDir: 'dist',
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
-  productionSourceMap: false,
+  productionSourceMap: true, // 改为 true 确保生产环境也有 source map
   devServer: {
     port: port,
     open: true,
@@ -44,8 +24,6 @@ module.exports = {
       errors: true
     },
     proxy: {
-      // change xxx-api/login => mock/login
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
         target: `http://127.0.0.1:8443`,
         changeOrigin: true,
@@ -54,21 +32,21 @@ module.exports = {
         }
       }
     },
-    // after: require('./mock/mock-server.js')
   },
+  // 合并 configureWebpack 配置
   configureWebpack: {
-    // provide the app's title in webpack's name field, so that
-    // it can be accessed in index.html to inject the correct title.
     name: name,
     resolve: {
       alias: {
         '@': resolve('src')
       }
-    }
+    },
+    // 调试配置 - 确保开发环境有完整的 source map
+    devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-source-map'
   },
   chainWebpack(config) {
-    config.plugins.delete('preload') // TODO: need test
-    config.plugins.delete('prefetch') // TODO: need test
+    config.plugins.delete('preload')
+    config.plugins.delete('prefetch')
 
     // set svg-sprite-loader
     config.module
@@ -98,11 +76,11 @@ module.exports = {
       })
       .end()
 
-    config
-      // https://webpack.js.org/configuration/devtool/#development
-      .when(process.env.NODE_ENV === 'development',
-        config => config.devtool('cheap-source-map')
-      )
+    // 移除或注释掉这里的 devtool 配置，避免冲突
+    // config
+    //   .when(process.env.NODE_ENV === 'development',
+    //     config => config.devtool('cheap-source-map')
+    //   )
 
     config
       .when(process.env.NODE_ENV !== 'development',
@@ -111,7 +89,6 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()
@@ -123,17 +100,17 @@ module.exports = {
                   name: 'chunk-libs',
                   test: /[\\/]node_modules[\\/]/,
                   priority: 10,
-                  chunks: 'initial' // only package third parties that are initially dependent
+                  chunks: 'initial'
                 },
                 elementUI: {
-                  name: 'chunk-elementUI', // split elementUI into a single package
-                  priority: 20, // the weight needs to be larger than libs and app or it will be packaged into libs or app
-                  test: /[\\/]node_modules[\\/]_?element-ui(.*)/ // in order to adapt to cnpm
+                  name: 'chunk-elementUI',
+                  priority: 20,
+                  test: /[\\/]node_modules[\\/]_?element-ui(.*)/
                 },
                 commons: {
                   name: 'chunk-commons',
-                  test: resolve('src/components'), // can customize your rules
-                  minChunks: 3, //  minimum common number
+                  test: resolve('src/components'),
+                  minChunks: 3,
                   priority: 5,
                   reuseExistingChunk: true
                 }

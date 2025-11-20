@@ -10,8 +10,8 @@
         </div>
         <div class="header-stats">
           <div class="stat-item">
-            <div class="stat-value">{{ totalQuestions }}</div>
-            <div class="stat-label">总题数</div>
+            <div class="stat-value">{{ totalAudios }}</div>
+            <div class="stat-label">总音频</div>
           </div>
           <div class="stat-item">
             <div class="stat-value">{{ overallProgress }}%</div>
@@ -71,55 +71,51 @@
         </div>
       </div>
 
-      <!-- 右侧题目列表 -->
-      <div class="questions-main">
-        <div class="questions-header">
+      <!-- 右侧音频列表 -->
+      <div class="audios-main">
+        <div class="audios-header">
           <h2>{{ selectedCategory?.name }}</h2>
-          <div class="questions-stats">
-            <span
-              >{{ completedQuestions }}/{{
-                filteredQuestions.length
-              }}
-              完成</span
-            >
+          <div class="audios-stats">
+            <span>{{ completedAudios }}/{{ filteredAudios.length }} 完成</span>
           </div>
         </div>
 
-        <div class="questions-list">
+        <div class="audios-list">
           <div
-            v-for="question in filteredQuestions"
-            :key="question.id"
-            class="question-item"
-            @click="startQuestion(question.id)"
+            v-for="audio in filteredAudios"
+            :key="audio.id"
+            class="audio-item"
+            @click="startAudio(audio)"
           >
-            <div class="question-order">{{ question.sortOrder }}</div>
+            <div class="audio-order">{{ audio.sortOrder }}</div>
 
-            <div class="question-content">
-              <div class="question-main">
-                <h3 class="question-title">{{ question.title }}</h3>
-                <p class="question-desc">{{ question.description }}</p>
-                <div class="question-meta">
+            <div class="audio-content">
+              <div class="audio-main">
+                <h3 class="audio-title">{{ audio.title }}</h3>
+                <p class="audio-desc">{{ audio.description }}</p>
+                <div class="audio-meta">
                   <span class="meta-item">
                     <i class="fas fa-clock"></i>
-                    {{ question.duration }}
+                    {{ formatDuration(audio.audioDuration) }}
                   </span>
-                  <span class="difficulty-tag" :class="question.difficulty">
-                    {{ getDifficultyText(question.difficulty) }}
+                  <span class="meta-item">
+                    <i class="fas fa-question-circle"></i>
+                    {{ audio.questionCount }} 个问题
+                  </span>
+                  <span class="difficulty-tag" :class="audio.difficulty">
+                    {{ getDifficultyText(audio.difficulty) }}
                   </span>
                 </div>
               </div>
 
-              <div class="question-actions">
+              <div class="audio-actions">
                 <div
                   class="status-indicator"
-                  :class="getStatusClass(question.status)"
+                  :class="getStatusClass(audio.status)"
                 >
-                  {{ getStatusText(question.status) }}
+                  {{ getStatusText(audio.status) }}
                 </div>
-                <button
-                  class="start-btn"
-                  @click.stop="startQuestion(question.id)"
-                >
+                <button class="start-btn" @click.stop="startAudio(audio)">
                   <i class="fas fa-play"></i>
                 </button>
               </div>
@@ -128,10 +124,10 @@
         </div>
 
         <!-- 空状态 -->
-        <div class="empty-state" v-if="filteredQuestions.length === 0">
+        <div class="empty-state" v-if="filteredAudios.length === 0">
           <i class="fas fa-music empty-icon"></i>
-          <h3>暂无题目</h3>
-          <p>该分类下暂时没有可用的听力题目</p>
+          <h3>暂无音频材料</h3>
+          <p>该分类下暂时没有可用的听力音频</p>
         </div>
       </div>
     </div>
@@ -141,8 +137,10 @@
 <script>
 import {
   getListeningCategory,
-  getQuestionByCategory,
+  getAudiosByCategory,
+  getAudioQuestionCount,
 } from "@/api/question/question";
+
 export default {
   name: "ListeningLayoutRich",
   props: {
@@ -155,13 +153,22 @@ export default {
     return {
       selectedCategoryId: 1,
       categories: [],
-
-      questions: [],
+      audios: [], // 改为存储音频列表
+      userProgress: [], // 用户学习进度
+      useMockData: false, // 添加一个开关，方便切换
     };
   },
   created() {
-    this.getListeningCategory();
-    this.getQuestionByCategory();
+    // this.getListeningCategory();
+    // this.getAudiosByCategory();
+    // this.loadUserProgress();
+
+    if (this.useMockData) {
+      this.loadMockData();
+    } else {
+      this.getListeningCategory();
+      this.getAudiosByCategory();
+    }
   },
   computed: {
     currentLevel() {
@@ -170,17 +177,18 @@ export default {
     selectedCategory() {
       return this.categories.find((cat) => cat.id === this.selectedCategoryId);
     },
-    filteredQuestions() {
-      return this.questions.filter(
-        (q) => q.categoryId === this.selectedCategoryId
+    filteredAudios() {
+      // 根据选中的分类筛选音频
+      return this.audios.filter(
+        (audio) => audio.categoryId === this.selectedCategoryId
       );
     },
-    completedQuestions() {
-      return this.filteredQuestions.filter((q) => q.status === "completed")
+    completedAudios() {
+      return this.filteredAudios.filter((audio) => audio.status === "completed")
         .length;
     },
-    totalQuestions() {
-      return this.questions.length;
+    totalAudios() {
+      return this.audios.length;
     },
     totalCategories() {
       return this.categories.length;
@@ -189,27 +197,225 @@ export default {
       return this.categories.filter((cat) => cat.progress === 100).length;
     },
     overallProgress() {
-      console.log(this.categories);
+      if (this.categories.length === 0) return 0;
       const totalProgress = this.categories.reduce(
-        (sum, cat) => sum + cat.progress,
+        (sum, cat) => sum + (cat.progress || 0),
         0
       );
       return Math.round(totalProgress / this.categories.length);
     },
   },
   methods: {
+    loadMockData() {
+      // 使用上面的模拟数据
+      this.categories = [
+        {
+          id: 1,
+          name: "日常对话",
+          description: "基础日常交流对话练习",
+          icon: "fas fa-comments",
+          level: "A1",
+          sortOrder: 1,
+          progress: 30,
+        },
+        {
+          id: 2,
+          name: "天气预报",
+          description: "德语天气预报理解训练",
+          icon: "fas fa-cloud-sun",
+          level: "A1",
+          sortOrder: 2,
+          progress: 60,
+        },
+        {
+          id: 3,
+          name: "餐厅点餐",
+          description: "餐厅用餐和点餐场景",
+          icon: "fas fa-utensils",
+          level: "A2",
+          sortOrder: 3,
+          progress: 0,
+        },
+        {
+          id: 4,
+          name: "购物对话",
+          description: "购物和价格询问对话",
+          icon: "fas fa-shopping-cart",
+          level: "A2",
+          sortOrder: 4,
+          progress: 80,
+        },
+        {
+          id: 5,
+          name: "问路指路",
+          description: "询问方向和地点指示",
+          icon: "fas fa-map-signs",
+          level: "B1",
+          sortOrder: 5,
+          progress: 45,
+        },
+      ];
+
+      this.audios = [
+        {
+          id: 1,
+          categoryId: 1,
+          title: "早晨问候对话",
+          description: "学习德语早晨问候的基本表达",
+          audio_url: "/audio/greeting-morning.mp3",
+          audio_duration: 60,
+          difficulty: "easy",
+          sort_order: 1,
+          questionCount: 3,
+          status: "not_started",
+          progress: 0,
+        },
+        {
+          id: 2,
+          categoryId: 1,
+          title: "自我介绍对话",
+          description: "学习如何进行德语自我介绍",
+          audio_url: "/audio/self-introduction.mp3",
+          audio_duration: 90,
+          difficulty: "easy",
+          sort_order: 2,
+          questionCount: 4,
+          status: "in_progress",
+          progress: 50,
+        },
+        {
+          id: 3,
+          categoryId: 2,
+          title: "柏林天气预报",
+          description: "柏林地区详细天气预报",
+          audio_url: "/audio/berlin-weather.mp3",
+          audio_duration: 120,
+          difficulty: "medium",
+          sort_order: 1,
+          questionCount: 5,
+          status: "completed",
+          progress: 100,
+        },
+        {
+          id: 4,
+          categoryId: 2,
+          title: "慕尼黑天气预警",
+          description: "慕尼黑地区特殊天气预警",
+          audio_url: "/audio/munich-weather.mp3",
+          audio_duration: 150,
+          difficulty: "hard",
+          sort_order: 2,
+          questionCount: 3,
+          status: "not_started",
+          progress: 0,
+        },
+        {
+          id: 5,
+          categoryId: 3,
+          title: "餐厅订位对话",
+          description: "学习在餐厅订位的德语表达",
+          audio_url: "/audio/restaurant-booking.mp3",
+          audio_duration: 110,
+          difficulty: "medium",
+          sort_order: 1,
+          questionCount: 4,
+          status: "not_started",
+          progress: 0,
+        },
+        {
+          id: 6,
+          categoryId: 3,
+          title: "点餐对话",
+          description: "学习餐厅点餐的完整流程",
+          audio_url: "/audio/ordering-food.mp3",
+          audio_duration: 160,
+          difficulty: "medium",
+          sort_order: 2,
+          questionCount: 6,
+          status: "in_progress",
+          progress: 30,
+        },
+        {
+          id: 7,
+          categoryId: 4,
+          title: "价格询问对话",
+          description: "学习询问商品价格的表达",
+          audio_url: "/audio/price-ask.mp3",
+          audio_duration: 95,
+          difficulty: "easy",
+          sort_order: 1,
+          questionCount: 3,
+          status: "completed",
+          progress: 100,
+        },
+        {
+          id: 8,
+          categoryId: 4,
+          title: "尺寸选择对话",
+          description: "学习选择服装尺寸的表达",
+          audio_url: "/audio/size-select.mp3",
+          audio_duration: 130,
+          difficulty: "medium",
+          sort_order: 2,
+          questionCount: 4,
+          status: "completed",
+          progress: 100,
+        },
+        {
+          id: 9,
+          categoryId: 5,
+          title: "问路基础对话",
+          description: "学习基本的问路表达",
+          audio_url: "/audio/asking-directions.mp3",
+          audio_duration: 95,
+          difficulty: "easy",
+          sort_order: 1,
+          questionCount: 3,
+          status: "in_progress",
+          progress: 60,
+        },
+        {
+          id: 10,
+          categoryId: 5,
+          title: "复杂路线指示",
+          description: "学习复杂的路线指示理解",
+          audio_url: "/audio/complex-directions.mp3",
+          audio_duration: 180,
+          difficulty: "hard",
+          sort_order: 2,
+          questionCount: 5,
+          status: "not_started",
+          progress: 0,
+        },
+      ];
+    },
     selectCategory(categoryId) {
       this.selectedCategoryId = categoryId;
+      this.getAudiosByCategory();
     },
-    startQuestion(questionId) {
+
+    startAudio(audio) {
       this.$router.push({
         name: "ListeningExercise",
         params: {
-          questionId: questionId,
+          audioId: audio.id,
+          categoryId: this.selectedCategoryId,
           level: this.currentLevel,
+          category: this.categories.find(
+            (cat) => cat.id === this.selectedCategoryId
+          ),
+          audio: audio,
         },
       });
     },
+
+    formatDuration(seconds) {
+      if (!seconds) return "0:00";
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+    },
+
     getDifficultyText(difficulty) {
       const map = {
         easy: "简单",
@@ -218,41 +424,85 @@ export default {
       };
       return map[difficulty] || "简单";
     },
+
     getStatusClass(status) {
       const map = {
         completed: "completed",
-        "in-progress": "in-progress",
-        "not-started": "not-started",
+        in_progress: "in-progress",
+        not_started: "not-started",
       };
       return map[status] || "not-started";
     },
+
     getStatusText(status) {
       const map = {
         completed: "已完成",
-        "in-progress": "进行中",
-        "not-started": "开始",
+        in_progress: "进行中",
+        not_started: "开始",
       };
       return map[status] || "开始";
     },
 
-    getListeningCategory() {
-      const data = {};
-      getListeningCategory(data).then((response) => {
-        this.categories = response.data;
-      });
+    async getListeningCategory() {
+      try {
+        const response = await getListeningCategory();
+        this.categories = response.data.map((cat) => ({
+          ...cat,
+          progress: 0, // 初始化进度
+        }));
+      } catch (error) {
+        console.error("加载分类失败:", error);
+      }
     },
 
-    getQuestionByCategory() {
-      const data = {
-        categoryId: this.selectedCategoryId,
-      };
-      getQuestionByCategory(data).then((response) => {
-        // const userData = response.data;
-        console.log("questions" + response);
-        console.log(response);
-        this.questions = response.data;
-        // this.categories = response.data;
-      });
+    async getAudiosByCategory() {
+      try {
+        const data = {
+          categoryId: this.selectedCategoryId,
+        };
+        const response = await getAudiosByCategory(data);
+        this.audios = await Promise.all(
+          response.data.map(async (audio) => {
+            // 获取每个音频的题目数量
+            const questionCount = await audio.questionCount;
+            // 获取用户学习状态
+            const userProgress = this.getAudioProgress(audio.id);
+
+            return {
+              ...audio,
+              questionCount,
+              status: userProgress?.status || "not_started",
+              userProgress,
+            };
+          })
+        );
+      } catch (error) {
+        console.error("加载音频列表失败:", error);
+        this.audios = [];
+      }
+    },
+
+    async getAudioQuestionCount(audioId) {
+      try {
+        const response = await getAudioQuestionCount(audioId);
+        return response.data.count || 0;
+      } catch (error) {
+        console.error("获取题目数量失败:", error);
+        return 0;
+      }
+    },
+
+    getAudioProgress(audioId) {
+      return this.userProgress.find((progress) => progress.audioId === audioId);
+    },
+
+    async loadUserProgress() {
+      // 模拟加载用户学习进度
+      this.userProgress = [
+        { audioId: 1, status: "completed", score: 85 },
+        { audioId: 2, status: "in_progress", score: 60 },
+        // ... 其他进度数据
+      ];
     },
   },
 };
@@ -522,8 +772,8 @@ export default {
   min-width: 24px;
 }
 
-/* 右侧题目列表 */
-.questions-main {
+/* 右侧音频列表 */
+.audios-main {
   background: white;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -531,7 +781,7 @@ export default {
   overflow: hidden;
 }
 
-.questions-header {
+.audios-header {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid #e2e8f0;
   background: #f7fafc;
@@ -540,24 +790,24 @@ export default {
   align-items: center;
 }
 
-.questions-header h2 {
+.audios-header h2 {
   font-size: 1.125rem;
   font-weight: 600;
   color: #2d3748;
   margin: 0;
 }
 
-.questions-stats {
+.audios-stats {
   font-size: 0.8125rem;
   color: #718096;
   font-weight: 500;
 }
 
-.questions-list {
+.audios-list {
   padding: 0.75rem;
 }
 
-.question-item {
+.audio-item {
   display: flex;
   align-items: center;
   padding: 0.875rem;
@@ -569,16 +819,16 @@ export default {
   gap: 0.75rem;
 }
 
-.question-item:hover {
+.audio-item:hover {
   border-color: #cbd5e0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.question-item:last-child {
+.audio-item:last-child {
   margin-bottom: 0;
 }
 
-.question-order {
+.audio-order {
   width: 32px;
   height: 32px;
   border-radius: 6px;
@@ -592,7 +842,7 @@ export default {
   flex-shrink: 0;
 }
 
-.question-content {
+.audio-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -601,12 +851,12 @@ export default {
   min-width: 0;
 }
 
-.question-main {
+.audio-main {
   flex: 1;
   min-width: 0;
 }
 
-.question-title {
+.audio-title {
   font-size: 0.9375rem;
   font-weight: 500;
   color: #2d3748;
@@ -616,7 +866,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.question-desc {
+.audio-desc {
   font-size: 0.8125rem;
   color: #718096;
   margin: 0 0 0.5rem 0;
@@ -626,7 +876,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.question-meta {
+.audio-meta {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -665,8 +915,8 @@ export default {
   border: 1px solid #fee2e2;
 }
 
-/* 题目操作区域 */
-.question-actions {
+/* 音频操作区域 */
+.audio-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -788,17 +1038,17 @@ export default {
     order: 2;
   }
 
-  .questions-main {
+  .audios-main {
     order: 1;
   }
 
-  .question-content {
+  .audio-content {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }
 
-  .question-actions {
+  .audio-actions {
     justify-content: space-between;
   }
 }
@@ -829,16 +1079,16 @@ export default {
     padding: 0.625rem;
   }
 
-  .question-item {
+  .audio-item {
     padding: 0.75rem;
     gap: 0.5rem;
   }
 
-  .questions-header {
+  .audios-header {
     padding: 0.875rem 1rem;
   }
 
-  .questions-list {
+  .audios-list {
     padding: 0.5rem;
   }
 }

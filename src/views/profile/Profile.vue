@@ -369,14 +369,11 @@ export default {
       var username = sessionStorage.getItem("username");
       getInfo(username).then((response) => {
         const userData = response.data;
-        console.log("userData" + userData);
         this.settingsForm.id = userData.id;
         this.settingsForm.username = userData.username;
         this.settingsForm.name = userData.name;
         this.settingsForm.mobile = userData.mobile;
-
         this.userInfo.name = userData.name;
-        console.log(this.settingsForm);
       });
     },
   },

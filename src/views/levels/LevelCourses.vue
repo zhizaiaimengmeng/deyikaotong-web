@@ -119,7 +119,6 @@ export default {
         writing: "WritingList",
         speaking: "SpeakingList",
       };
-      console.log(skill);
       // 确保路由存在
       if (routes[skill]) {
         this.$router.push({

@@ -56,4 +56,31 @@ export function getQuestionByCategory(data) {
   })
 }
 
+export function getAudiosByCategory(data) {
+  return request({
+    url: '/question-server/question/getAudiosByCategory',
+    method: 'post',
+    data
+  })
+}
+//获取每个音频的题目数量
+export function getAudioQuestionCount(data) {
+  return request({
+    url: '/question-server/question/getAudioQuestionCount',
+    method: 'post',
+    data
+  })
+}
+// 获取某个音频的题目
+export function getAudioQuestions(data) {
+  return request({
+    url: '/question-server/question/getAudioQuestions',
+    method: 'post',
+    data
+  })
+}
+
+
+
+
 

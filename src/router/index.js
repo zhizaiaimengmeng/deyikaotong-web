@@ -47,7 +47,7 @@ export default new Router({
             props: true
         },
         {
-            path: '/listening/exercise/:exerciseId',
+            path: '/listening/exercise',
             name: 'ListeningExercise',
             component: () => import('@/views/skills/listening/ListeningExercise.vue'),
             meta: { title: '听力练习' },
