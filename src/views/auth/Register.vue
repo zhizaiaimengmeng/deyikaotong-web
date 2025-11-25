@@ -436,6 +436,7 @@ export default {
   height: 48px;
   font-size: 1.1rem;
   font-weight: 600;
+  background-color: #645dec;
 }
 
 .register-footer {

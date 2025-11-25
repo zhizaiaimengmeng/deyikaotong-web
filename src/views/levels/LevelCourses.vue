@@ -165,10 +165,10 @@ export default {
 
 /* 技能网格 */
 .skills-grid {
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 

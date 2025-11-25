@@ -4,6 +4,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import '@fortawesome/fontawesome-free/css/all.css';
 
 Vue.use(ElementUI)
 // //  确保 store 正确注入到所有组件

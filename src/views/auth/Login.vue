@@ -337,7 +337,7 @@ export default {
 .btn-login {
   width: 100%;
   padding: 0.75rem;
-  background: #0284c7;
+  background: #4f46e5;
   color: white;
   border: none;
   border-radius: 8px;
@@ -377,7 +377,7 @@ export default {
 /* 平台介绍区域 */
 .platform-intro {
   flex: 1;
-  background: linear-gradient(135deg, #e2e0e7 0%, #0284c7 100%);
+  background: linear-gradient(135deg, #e2e0e7 0%, #4f46e5 100%);
   color: white;
   padding: 3rem;
   display: flex;

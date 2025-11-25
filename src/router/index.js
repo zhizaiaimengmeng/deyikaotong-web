@@ -76,8 +76,15 @@ export default new Router({
         {
             path: '/skills/writing/:level',
             name: 'WritingList',
-            component: () => import('@/views/skills/Writing.vue'),
+            component: () => import('@/views/skills/writing/WritingList.vue'),
             meta: { title: '写作训练' },
+            props: true
+        },
+        {
+            path: '/writing/exercise',
+            name: 'WritingExercise',
+            component: () => import('@/views/skills/writing/components/WritingExercise.vue'),
+            meta: { title: '阅读练习' },
             props: true
         },
         {
