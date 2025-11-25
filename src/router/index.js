@@ -56,8 +56,21 @@ export default new Router({
         {
             path: '/skills/reading/:level',
             name: 'ReadingList',
-            component: () => import('@/views/skills/Reading.vue'),
+            component: () => import('@/views/skills/reading/ReadingList.vue'),
             meta: { title: '阅读训练' },
+            props: true
+        },
+        {
+            path: '/reading/exercise',
+            name: 'ReadingExercise',
+            component: () => import('@/views/skills/reading/components/ReadingExercise.vue'),
+            meta: { title: '阅读练习' },
+            props: true
+        },
+        {
+            path: '/cloze-exercise',
+            name: 'ClozeExercise',
+            component: () => import('@/views/skills/reading/components/ClozeExercise.vue'),
             props: true
         },
         {
