@@ -193,7 +193,6 @@
 <script>
 import {
   getWritingExercise,
-  saveWritingDraft,
   submitWriting,
 } from "@/api/question/writing/exercise";
 
@@ -487,7 +486,6 @@ export default {
 
     goBack() {
       if (this.content.trim().length > 0 && !this.lastSaved) {
-        level;
         if (confirm("您有未保存的内容，确定要离开吗？")) {
           this.$router.push({
             name: "WritingList",

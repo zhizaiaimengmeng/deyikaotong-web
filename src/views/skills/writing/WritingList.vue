@@ -170,10 +170,7 @@
 </template>
 
 <script>
-import {
-  getWritingQuestions,
-  getUserWritingProgress,
-} from "@/api/question/writing/exercise";
+import { getWritingQuestions } from "@/api/question/writing/exercise";
 
 export default {
   name: "WritingList",

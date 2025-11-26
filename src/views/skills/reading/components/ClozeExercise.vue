@@ -347,9 +347,9 @@ export default {
     // 将段落拆分为文本段和空白段
     getParagraphSegments(paragraph, paragraphIndex) {
       // 简化调试信息
-      // if (paragraphIndex === 0) {
-      //   console.log("开始处理段落，总共", this.article.content.length, "段");
-      // }
+      if (paragraphIndex === 0) {
+        console.log("开始处理段落，总共", this.article.content.length, "段");
+      }
 
       const segments = [];
 

@@ -11,8 +11,18 @@ const name = defaultSettings.title || 'SpringCloud Admin'
 const port = process.env.port || process.env.npm_config_port || 8080
 
 module.exports = {
+  css: {
+    loaderOptions: {
+      sass: {
+        sassOptions: {
+          // 静默弃用警告 - 最省事的方案
+          silenceDeprecations: ['global-builtin', 'import', 'slash-div']
+        }
+      }
+    }
+  },
   publicPath: '/',
-  outputDir: 'dist',
+  outputDir: 'dyktweb',
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: true, // 改为 true 确保生产环境也有 source map
@@ -85,13 +95,13 @@ module.exports = {
     config
       .when(process.env.NODE_ENV !== 'development',
         config => {
-          config
-            .plugin('ScriptExtHtmlWebpackPlugin')
-            .after('html')
-            .use('script-ext-html-webpack-plugin', [{
-              inline: /runtime\..*\.js$/
-            }])
-            .end()
+          // config
+          //   .plugin('ScriptExtHtmlWebpackPlugin')
+          //   .after('html')
+          //   .use('script-ext-html-webpack-plugin', [{
+          //     inline: /runtime\..*\.js$/
+          //   }])
+          //   .end()
           config
             .optimization.splitChunks({
               chunks: 'all',
