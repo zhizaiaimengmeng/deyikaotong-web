@@ -90,8 +90,15 @@ export default new Router({
         {
             path: '/skills/speaking/:level',
             name: 'SpeakingList',
-            component: () => import('@/views/skills/Speaking.vue'),
+            component: () => import('@/views/skills/speaking//SpeakingList.vue'),
             meta: { title: '口语训练' },
+            props: true
+        },
+        {
+            path: '/speaking/exercise',
+            name: 'SpeakingExercise',
+            component: () => import('@/views/skills/speaking/components/SpeakingExercise.vue'),
+            meta: { title: '阅读练习' },
             props: true
         },
         // 认证路由
